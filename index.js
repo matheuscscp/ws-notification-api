@@ -2,6 +2,7 @@ const express = require('express')
 const WebSocket = require('ws')
 
 const wsByUid = new Map()
+const uidByWs = new Map()
 
 const app = express()
 
@@ -27,19 +28,24 @@ const onMessage = async (ws, data) => {
   console.log(`received message: ${JSON.stringify(data)}`)
   const uid = data.uid || ''
   if (uid === '') {
-    ws.close()
-    console.log('invalid uid')
+    console.log('empty uid received, uid socket not registered')
     return
   }
 
   if (wsByUid.has(uid)) {
     const old = wsByUid.get(uid)
-    if (old !== ws) {
-      old.close()
-      console.log(`uid '${uid}' connected again, closing old connection`)
+    if (old === ws) {
+      return
     }
+
+    uidByWs.delete(old)
+    old.close()
+    console.log(
+      `uid '${uid}' opened another connection, closing old connection`,
+    )
   }
   wsByUid.set(uid, ws)
+  uidByWs.set(ws, uid)
   console.log(`stored uid '${uid}' connection`)
 }
 
@@ -49,6 +55,23 @@ const onError = (ws, error) => {
 
 wss.on('connection', (ws, req) => {
   console.log('received connection')
-  ws.on('message', msg => onMessage(ws, JSON.parse(msg.toString())))
+  ws.on('message', msg => {
+    try {
+      const data = JSON.parse(msg.toString())
+      onMessage(ws, data)
+    } catch (e) {
+      console.error(`received invalid message (not JSON): ${msg.toString()}`)
+    }
+  })
+  ws.on('close', () => {
+    if (uidByWs.has(ws)) {
+      const uid = uidByWs.get(ws)
+      uidByWs.delete(ws)
+      wsByUid.delete(uid)
+      console.log(`uid '${uid}' connection closed`)
+    } else {
+      console.log('connection closed')
+    }
+  })
   ws.on('error', error => onError(ws, error))
 })
