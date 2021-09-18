@@ -1,6 +1,8 @@
 const express = require('express')
+const fetch = require('node-fetch')
 const endpoint = require('./endpoint')
 const connectionMap = require('./connectionMap')
+const serverMap = require('./serverMap')
 
 const app = express()
 app.use(express.json())
@@ -10,14 +12,56 @@ app.post('/notify', async (req, res, next) => {
   console.log(`received notify: ${JSON.stringify(body)}`)
 
   const { uid, msg } = body
+  const userEndpoint = serverMap.getEndpointByUid(uid)
 
-  const ws = connectionMap.getWsByUid(uid)
-  if (ws) {
-    ws.send(msg)
-    console.log(`found uid '${uid}', sending msg '${msg}'`)
+  if (!userEndpoint) {
+    res.sendStatus(404)
+    console.log(`uid '${uid}' server not found`)
+    return
   }
 
-  res.json({ success: true })
+  if (userEndpoint === endpoint.url) {
+    const ws = connectionMap.getWsByUid(uid)
+    if (ws) {
+      ws.send(msg)
+      res.sendStatus(200)
+      console.log(`found uid '${uid}' connection, sending msg '${msg}'`)
+      return
+    }
+    res.sendStatus(404)
+    console.log(`uid '${uid}' connection not found`)
+    return
+  }
+
+  try {
+    const notifyResp = await fetch(`${userEndpoint}/notify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: {
+        uid,
+        msg,
+      },
+    })
+
+    if (!notifyResp.ok) {
+      res.sendStatus(notifyResp.status)
+      console.error(
+        `failed to proxy notify uid '${uid}', endpoint '${userEndpoint}' and msg '${msg}'`,
+      )
+      return
+    }
+  } catch (error) {
+    res.sendStatus(500)
+    console.error(
+      `failed to proxy notify uid '${uid}', endpoint '${userEndpoint}' and msg '${msg}'`,
+    )
+    return
+  }
+
+  console.log(`success proxying '${uid}' to '${userEndpoint}'`)
+  res.sendStatus(200)
 })
 
 module.exports = app.listen(endpoint.port, () => {
