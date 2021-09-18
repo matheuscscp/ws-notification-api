@@ -53,7 +53,7 @@ app.post('/notify', async (req, res, next) => {
     if (!notifyResp.ok) {
       res.sendStatus(notifyResp.status)
       console.error(
-        `failed to proxy notify uid '${uid}', endpoint '${userEndpoint}' and msg '${msg}'`,
+        `not ok status proxying notify uid '${uid}', endpoint '${userEndpoint}' and msg '${msg}'`,
       )
       return
     }
