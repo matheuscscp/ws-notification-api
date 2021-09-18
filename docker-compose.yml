@@ -5,3 +5,20 @@ services:
     container_name: ws_notification_api_redis
     ports:
       - 6379:6379
+  pod1:
+    image: ws-notification-api
+    container_name: ws_notification_api_pod1
+    ports:
+      - 3000:3000
+    environment:
+      - HOST=pod1
+      - REDIS_HOST=redis
+  pod2:
+    image: ws-notification-api
+    container_name: ws_notification_api_pod2
+    ports:
+      - 3001:3001
+    environment:
+      - HOST=pod2
+      - PORT=3001
+      - REDIS_HOST=redis
