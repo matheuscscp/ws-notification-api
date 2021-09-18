@@ -1,5 +1,5 @@
 const express = require('express')
-const map = require('./map')
+const connectionMap = require('./connectionMap')
 
 const app = express()
 app.use(express.json())
@@ -10,7 +10,7 @@ app.post('/notify', async (req, res, next) => {
 
   const { uid, msg } = body
 
-  const ws = map.getWsByUid(uid)
+  const ws = connectionMap.getWsByUid(uid)
   if (ws) {
     ws.send(msg)
     console.log(`found uid '${uid}', sending msg '${msg}'`)

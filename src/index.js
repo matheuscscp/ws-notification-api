@@ -1,2 +1,2 @@
-const server = require('./server')
-require('./wss')(server)
+const http = require('./http')
+require('./wss')(http)

@@ -1,5 +1,5 @@
 const WebSocket = require('ws')
-const map = require('./map')
+const connectionMap = require('./connectionMap')
 
 const onMessage = async (ws, msg) => {
   let data
@@ -17,10 +17,10 @@ const onMessage = async (ws, msg) => {
     return
   }
 
-  map.set(uid, ws)
+  connectionMap.set(uid, ws)
 }
 
-const onClose = ws => map.deleteWs(ws)
+const onClose = ws => connectionMap.deleteWs(ws)
 
 const onError = (ws, error) => {
   console.error(`received error: ${JSON.stringify(error)}`)
