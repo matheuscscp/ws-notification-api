@@ -12,7 +12,15 @@ app.post('/notify', async (req, res, next) => {
   console.log(`received notify: ${JSON.stringify(body)}`)
 
   const { uid, msg } = body
-  const userEndpoint = serverMap.getEndpointByUid(uid)
+
+  let userEndpoint
+  try {
+    userEndpoint = await serverMap.getEndpointByUid(uid)
+  } catch (e) {
+    res.sendStatus(500)
+    console.error(`error getting endpoint for uid '${uid}'`)
+    return
+  }
 
   if (!userEndpoint) {
     res.sendStatus(404)
