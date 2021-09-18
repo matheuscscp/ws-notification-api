@@ -1,4 +1,5 @@
 const express = require('express')
+const endpoint = require('./endpoint')
 const connectionMap = require('./connectionMap')
 
 const app = express()
@@ -19,4 +20,6 @@ app.post('/notify', async (req, res, next) => {
   res.json({ success: true })
 })
 
-module.exports = app.listen(3000)
+module.exports = app.listen(endpoint.port, () => {
+  console.log('endpoint configs:', endpoint)
+})
