@@ -1,5 +1,7 @@
 const WebSocket = require('ws')
+const endpoint = require('./endpoint')
 const connectionMap = require('./connectionMap')
+const serverMap = require('./serverMap')
 
 const onMessage = async (ws, msg) => {
   let data
@@ -18,6 +20,7 @@ const onMessage = async (ws, msg) => {
   }
 
   connectionMap.set(uid, ws)
+  serverMap.set(uid, endpoint.url)
 }
 
 const onClose = ws => connectionMap.deleteWs(ws)
