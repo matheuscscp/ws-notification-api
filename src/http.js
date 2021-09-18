@@ -60,8 +60,8 @@ app.post('/notify', async (req, res, next) => {
     return
   }
 
-  console.log(`success proxying '${uid}' to '${userEndpoint}'`)
   res.sendStatus(200)
+  console.log(`success proxying '${uid}' to '${userEndpoint}'`)
 })
 
 module.exports = app.listen(endpoint.port, () => {
