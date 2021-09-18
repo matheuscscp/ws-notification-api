@@ -47,10 +47,7 @@ app.post('/notify', async (req, res, next) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: {
-        uid,
-        msg,
-      },
+      body: JSON.stringify({ uid, msg }),
     })
 
     if (!notifyResp.ok) {
