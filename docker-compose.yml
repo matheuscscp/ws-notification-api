@@ -12,6 +12,25 @@ services:
     container_name: ws_notification_api_redis
     ports:
       - 6379:6379
+  postgres:
+    image: postgres:11.5-alpine
+    container_name: ws_notification_api_postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=ws_notification_api
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ws_notification_api_pgadmin
+    ports:
+      - 9090:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
   pod1:
     image: ws-notification-api:latest
     container_name: ws_notification_api_pod1
@@ -28,3 +47,7 @@ services:
     environment:
       - HOST=pod2
       - REDIS_HOST=redis
+
+volumes:
+  postgres_data:
+  pgadmin_data:
