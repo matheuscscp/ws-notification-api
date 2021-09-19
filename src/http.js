@@ -3,11 +3,35 @@ const fetch = require('node-fetch')
 const endpoint = require('./endpoint')
 const connectionMap = require('./connectionMap')
 const serverMap = require('./serverMap')
+const basicAuth = require('./basicAuth')
 
 const app = express()
-app.use(express.json())
+const router = express.Router()
 
-app.post('/notify', async (req, res, next) => {
+router.use(express.json())
+router.use((req, res, next) => {
+  const [basic, authz] = req.headers.authorization.split(' ')
+  if (basic !== 'Basic') {
+    res.sendStatus(400)
+    console.error('invalid authz header')
+    return
+  }
+
+  const [user, pass] = Buffer.from(authz, 'base64').toString().split(':')
+  if (
+    (basicAuth.user || basicAuth.pass) &&
+    (user !== basicAuth.user || pass !== basicAuth.pass)
+  ) {
+    res.sendStatus(401)
+    console.error('invalid authz')
+    return
+  }
+
+  next()
+})
+app.use('/api', router)
+
+router.post('/notify', async (req, res, next) => {
   const { body } = req
   console.log(`received notify: ${JSON.stringify(body)}`)
 
@@ -42,10 +66,13 @@ app.post('/notify', async (req, res, next) => {
   }
 
   try {
-    const notifyResp = await fetch(`${userEndpoint}/notify`, {
+    const notifyResp = await fetch(`${userEndpoint}/api/notify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Basic ${Buffer.from(
+          `${basicAuth.user}:${basicAuth.pass}`,
+        ).toString('base64')}`,
       },
       body: JSON.stringify({ uid, msg }),
     })
