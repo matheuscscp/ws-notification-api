@@ -42,7 +42,7 @@ const onConnection = (ws, req) => {
 }
 
 module.exports = server => {
-  const wss = new WebSocket.Server({ server })
+  const wss = new WebSocket.Server({ server, path: '/ws' })
 
   wss.on('connection', onConnection)
 }

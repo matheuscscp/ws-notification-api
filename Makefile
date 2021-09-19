@@ -1,4 +1,6 @@
-all:
+all: build deps
+
+build:
 	docker build . -t ws-notification-api:latest
 
 deps:
