@@ -19,8 +19,13 @@ const onMessage = async (ws, msg) => {
     return
   }
 
-  connectionMap.set(uid, ws)
-  serverMap.set(uid, endpoint.url)
+  try {
+    await serverMap.set(uid, endpoint.url)
+    connectionMap.set(uid, ws)
+  } catch (e) {
+    ws.close()
+    console.error(`uid '${uid}' kicked since could not store endpoint in redis`)
+  }
 }
 
 const onClose = ws => connectionMap.deleteWs(ws)
