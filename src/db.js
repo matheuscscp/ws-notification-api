@@ -10,6 +10,31 @@ const client = new Client(
 
 const connect = () => client.connect()
 
+const migrate = async () => {
+  console.log('migrating...')
+
+  try {
+    await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+  } catch (e) {
+    if (e.code !== '23505') {
+      throw e
+    }
+  }
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS jobs (
+      id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+      uid text NOT NULL,
+      msg text NOT NULL,
+      status text NOT NULL,
+      created_at timestamp without time zone DEFAULT now() NOT NULL,
+      updated_at timestamp without time zone DEFAULT now() NOT NULL
+    )
+  `)
+  await client.query(
+    'CREATE INDEX IF NOT EXISTS jobs_polling ON jobs (updated_at)',
+  )
+}
+
 const createJob = async (uid, msg) => {
   console.log('creating job...')
   await client.query(
@@ -44,6 +69,7 @@ const deleteJob = async id => {
 
 module.exports = {
   connect,
+  migrate,
   createJob,
   pollJob,
   deleteJob,
