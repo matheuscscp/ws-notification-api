@@ -13,10 +13,6 @@ const TTL_HOURS = parseInt(process.env.WORKER_TTL_HOURS || 1, 10)
 let running
 
 const notify = async () => {
-  if (!db.connected) {
-    throw Error('not connected to db')
-  }
-
   const job = await db.pollJob()
   if (!job) {
     throw Error('no jobs')

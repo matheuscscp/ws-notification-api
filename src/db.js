@@ -8,11 +8,7 @@ const client = new Client(
   process.env.DB_URL || 'postgres://postgres@postgres/ws_notification_api',
 )
 
-let connected = false
-const connect = async () => {
-  await client.connect()
-  connected = true
-}
+const connect = () => client.connect()
 
 const createJob = async (uid, msg) => {
   console.log('creating job...')
@@ -51,7 +47,4 @@ module.exports = {
   createJob,
   pollJob,
   deleteJob,
-  get connected() {
-    return connected
-  },
 }
