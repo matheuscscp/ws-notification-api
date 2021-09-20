@@ -30,6 +30,7 @@ const pollJob = async () => {
       WHERE status = $2 OR (status = $1 AND EXTRACT(EPOCH FROM (now() - updated_at)) > $3)
       ORDER BY updated_at ASC
       LIMIT 1
+      FOR UPDATE
     ) RETURNING id, uid, msg`,
     [STATUS_PROCESSING, STATUS_QUEUED, TIMEOUT_SECS],
   )
