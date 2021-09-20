@@ -31,7 +31,7 @@ const pollJob = async () => {
       ORDER BY updated_at ASC
       LIMIT 1
       FOR UPDATE
-    ) RETURNING id, uid, msg`,
+    ) RETURNING id, uid, msg, EXTRACT(EPOCH FROM (now() - created_at)) as age`,
     [STATUS_PROCESSING, STATUS_QUEUED, TIMEOUT_SECS],
   )
   const job = resp.rows[0]

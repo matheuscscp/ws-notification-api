@@ -6,8 +6,9 @@ const endpoint = require('./endpoint')
 const doNotify = require('./notify')
 const basicAuth = require('./basicAuth')
 
-const POOL_SIZE = parseInt(process.env.POOL_SIZE || 4, 10)
-const SLEEP_MILLIS = parseInt(process.env.SLEEP_MILLIS || 5000, 10)
+const POOL_SIZE = parseInt(process.env.WORKER_POOL_SIZE || 4, 10)
+const SLEEP_MILLIS = parseInt(process.env.WORKER_SLEEP_MILLIS || 5000, 10)
+const TTL_HOURS = parseInt(process.env.WORKER_TTL_HOURS || 1, 10)
 
 let running
 
@@ -21,7 +22,14 @@ const notify = async () => {
     throw Error('no jobs')
   }
 
-  const { id, uid, msg } = job
+  const { id, uid, msg, age } = job
+  console.log('will process job:', JSON.stringify({ id, age }))
+
+  if (age > TTL_HOURS * 60 * 60) {
+    console.log('job too old, deleting...')
+    await db.deleteJob(id)
+    return
+  }
 
   const userEndpoint = await serverMap.getEndpointByUid(uid)
   if (!userEndpoint) {
